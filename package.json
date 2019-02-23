@@ -4,7 +4,8 @@
   "description": "- [Getting Started](#getting-started)   - [What You Need](#what-you-need)   - [Running The App Locally](#running-the-app-locally)",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon"
+    "start": "node server.js",
+    "dev": "nodemon"
   },
   "repository": {
     "type": "git",
