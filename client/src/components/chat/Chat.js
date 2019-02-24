@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
+import { withAuthUser } from '../session';
 import {
   Row,
   Col,
@@ -10,6 +12,7 @@ import {
   Form,
   Input,
   Layout,
+  Avatar,
 } from 'antd';
 import './chat.scss';
 
@@ -25,13 +28,23 @@ class Chat extends Component {
 
   render() {
     const { messages } = this.state;
-    const { signOut } = this.props;
+    const { signOut, authUser } = this.props;
+    let UserAvatar = null;
 
+    if (authUser) {
+      UserAvatar = (
+        <Avatar src={authUser.photoURL} alt={authUser.displayName} />
+      );
+    } else {
+      UserAvatar = <Avatar icon="user" />;
+    }
     return (
       <Layout className="chat">
         <Header className="header">
-          <h2>Karma Chat</h2>
-          <p>Welcome, Guest</p>
+          <Link to="/">
+            <h2>Karma Chat</h2>
+          </Link>
+          <p>Welcome, {authUser ? authUser.displayName : 'Guest'}</p>
           <Button onClick={signOut}>Sign Out</Button>
         </Header>
         <Content className="content">
@@ -54,12 +67,19 @@ class Chat extends Component {
                         />
                       </Col>
                       <Col xs={24}>
-                        <Form.Item>
-                          <TextArea rows={2} />
-                        </Form.Item>
-                        <Form.Item>
-                          <Button htmlType="submit">Add Comment</Button>
-                        </Form.Item>
+                        <Comment
+                          avatar={UserAvatar}
+                          content={
+                            <>
+                              <Form.Item>
+                                <TextArea rows={3} />
+                              </Form.Item>
+                              <Form.Item>
+                                <Button htmlType="submit">Add Comment</Button>
+                              </Form.Item>
+                            </>
+                          }
+                        />
                       </Col>
                     </Row>
                   </TabPane>
@@ -73,4 +93,4 @@ class Chat extends Component {
   }
 }
 
-export default Chat;
+export default withAuthUser(Chat);
