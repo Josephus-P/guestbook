@@ -26,21 +26,24 @@ admin.initializeApp({
 });
 
 // Middleware to verify the Firebase token
-server.use('/login', async (req, res) => {
+async function verifyToken(req, res, next) {
   const idToken = req.headers.authorization;
-
+  console.log('verify ', req.body);
   try {
     await admin
       .auth()
       .verifyIdToken(idToken)
       .then(decodedToken => {
         req.body.uid = decodedToken.uid;
-        return req.next();
+        console.log('verified');
+        return next();
       });
   } catch (e) {
     return res.status(401).send('You are not authorized!');
   }
-});
+}
+
+server.use('/login', verifyToken);
 
 server.get('/', (req, res) => {
   res.status(200).send('Hello World');
@@ -94,7 +97,8 @@ server.post('/login', (req, res) => {
 });
 
 server.get('/comments', (req, res) => {
-  db('messages')
+  db('messages as m')
+    .join('users as u', 'm.user_uid', 'u.uid')
     .then(data => {
       res.status(200).json(data);
     })
@@ -104,7 +108,8 @@ server.get('/comments', (req, res) => {
     });
 });
 
-server.post('/comments', (req, res) => {
+server.post('/comments', verifyToken, (req, res) => {
+  console.log('/comments ', req.body);
   const { uid, message } = req.body;
   const comment = {
     user_uid: uid,

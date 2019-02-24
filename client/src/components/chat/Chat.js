@@ -15,19 +15,56 @@ import {
   Avatar,
 } from 'antd';
 import './chat.scss';
+import Axios from 'axios';
 
 const TabPane = Tabs.TabPane;
 const TextArea = Input.TextArea;
-const messages = [{ comment: 'Hello World' }];
 const { Header, Content } = Layout;
 
 class Chat extends Component {
   state = {
-    messages: messages,
+    messages: [],
+    message: '',
+    error: null,
+  };
+
+  componentDidMount() {
+    Axios.get('/comments')
+      .then(response => {
+        console.log(response.data);
+        this.setState({ messages: response.data });
+      })
+      .catch(err => {
+        this.setState({ error: err });
+      });
+  }
+
+  handleChange = event => {
+    this.setState({ message: event.target.value });
+  };
+
+  submitMessage = event => {
+    const newMessage = { message: this.state.message };
+    const messages = [];
+
+    Axios.post('/comments', newMessage)
+      .then(response => {
+        this.state.messages.forEach(message => {
+          messages.push(message);
+        });
+        messages.push({
+          ...newMessage,
+          photo_url: this.props.authUser.photoURL,
+          display_name: this.props.authUser.displayName,
+        });
+
+        this.setState({ messages: messages, message: '' });
+      })
+      .catch(err => console.log(err));
   };
 
   render() {
-    const { messages } = this.state;
+    const { messages, message } = this.state;
     const { signOut, authUser } = this.props;
     let UserAvatar = null;
 
@@ -62,7 +99,11 @@ class Chat extends Component {
                           className="list"
                           dataSource={messages}
                           renderItem={message => (
-                            <Comment content={<p>{message.comment}</p>} />
+                            <Comment
+                              avatar={<Avatar src={message.photo_url} />}
+                              author={message.display_name}
+                              content={<p>{message.message}</p>}
+                            />
                           )}
                         />
                       </Col>
@@ -72,10 +113,19 @@ class Chat extends Component {
                           content={
                             <>
                               <Form.Item>
-                                <TextArea rows={3} />
+                                <TextArea
+                                  onChange={this.handleChange}
+                                  value={message}
+                                  rows={3}
+                                />
                               </Form.Item>
                               <Form.Item>
-                                <Button htmlType="submit">Add Comment</Button>
+                                <Button
+                                  htmlType="submit"
+                                  onClick={this.submitMessage}
+                                >
+                                  Add Comment
+                                </Button>
                               </Form.Item>
                             </>
                           }
