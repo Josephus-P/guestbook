@@ -1,8 +1,43 @@
 .chat {
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #722ed1;
+    width: 100%;
+
+    @media (max-width: 560px) {
+      padding: 1rem;
+    }
+
+    h2,
+    p {
+      width: 33%;
+      display: inline-block;
+      color: white;
+      font-size: 2rem;
+    }
+
+    h2 {
+      @media (max-width: 560px) {
+        width: 50%;
+      }
+    }
+    p {
+      @media (max-width: 560px) {
+        display: none;
+      }
+    }
+  }
+
   .tab-general {
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     min-height: 60vh;
+  }
+
+  .content {
+    margin-top: 50px;
   }
 }
