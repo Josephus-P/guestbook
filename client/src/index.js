@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter as Router } from 'react-router-dom';
-//import Firebase, { FirebaseContext } from './components/firebase';
+import Firebase, { FirebaseContext } from './components/firebase';
 import App from './App';
 import axios from 'axios';
 import './index.scss';
@@ -12,8 +12,10 @@ axios.defaults.baseURL =
     : 'http://localhost:5000';
 
 ReactDOM.render(
-  <Router>
-    <App />
-  </Router>,
+  <FirebaseContext.Provider value={new Firebase()}>
+    <Router>
+      <App />
+    </Router>
+  </FirebaseContext.Provider>,
   document.getElementById('root')
 );

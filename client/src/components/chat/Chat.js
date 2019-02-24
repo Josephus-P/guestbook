@@ -25,13 +25,14 @@ class Chat extends Component {
 
   render() {
     const { messages } = this.state;
+    const { signOut } = this.props;
 
     return (
       <Layout className="chat">
         <Header className="header">
           <h2>Karma Chat</h2>
           <p>Welcome, Guest</p>
-          <Button>Sign Out</Button>
+          <Button onClick={signOut}>Sign Out</Button>
         </Header>
         <Content className="content">
           <Row type="flex" justify="center">

@@ -1,10 +1,36 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
+import { withAuthUser } from '../session';
 import { Row, Col, Card, Button } from 'antd';
 import './home.scss';
 
 class Home extends Component {
+  state = {
+    error: null,
+  };
+
+  loginGoogle = event => {
+    event.preventDefault();
+
+    this.props
+      .signInGoogle()
+      .then(socialAuthUser => {
+        console.log('login: ', socialAuthUser);
+        this.setState({ error: null });
+      })
+      .catch(error => {
+        this.setState({ error });
+      });
+  };
+
   render() {
+    console.log(this.props);
+    const { authUser } = this.props;
+
+    if (authUser) {
+      return <Redirect to="/chat" />;
+    }
+
     return (
       <div className="home">
         <Row type="flex" justify="center">
@@ -23,7 +49,9 @@ class Home extends Component {
               </Row>
               <Row type="flex" justify="center">
                 <Col xs={24} xl={16} xxl={12}>
-                  <Button block>Login with Google</Button>
+                  <Button onClick={this.loginGoogle} block>
+                    Login with Google
+                  </Button>
                 </Col>
               </Row>
               <Row type="flex" justify="center">
@@ -51,4 +79,4 @@ class Home extends Component {
   }
 }
 
-export default Home;
+export default withAuthUser(Home);
