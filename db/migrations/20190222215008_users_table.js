@@ -3,6 +3,7 @@ exports.up = function(knex, Promise) {
     tbl.increments();
     tbl.string('uid').unique();
     tbl.string('display_name').notNullable();
+    tbl.string('photo_url');
   });
 };
 

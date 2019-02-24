@@ -17,14 +17,27 @@ const withAuthentication = Component => {
       this.listener = this.props.firebase.auth.onAuthStateChanged(authUser => {
         console.log(authUser);
         if (authUser) {
-          this.props.firebase.auth.currentUser.getIdToken().then(idToken => {
-            axios.defaults.headers.common['Authorization'] = idToken;
+          return this.props.firebase.auth.currentUser
+            .getIdToken()
+            .then(idToken => {
+              axios.defaults.headers.common['Authorization'] = idToken;
 
-            this.setState({
-              authUser: authUser,
-              authTokenRecieved: true,
+              axios
+                .post('/login', {
+                  displayName: authUser.displayName,
+                  photoURL: authUser.photoURL,
+                })
+                .then(response => {
+                  this.setState({
+                    authUser: authUser,
+                    authTokenRecieved: true,
+                  });
+                })
+                .catch(err => {
+                  console.log(err);
+                  this.props.firebase.doSignOut();
+                });
             });
-          });
         } else {
           // localStorage.setItem('authUser', null);
           this.setState({ authUser: null, authTokenRecieved: false });
