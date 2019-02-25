@@ -13,6 +13,8 @@ import {
   Input,
   Layout,
   Avatar,
+  Alert,
+  message as antMessage,
 } from 'antd';
 import './chat.scss';
 import Axios from 'axios';
@@ -26,6 +28,7 @@ class Chat extends Component {
     messages: [],
     message: '',
     error: null,
+    alertOpen: false,
   };
 
   componentDidMount() {
@@ -40,10 +43,19 @@ class Chat extends Component {
   }
 
   handleChange = event => {
+    if (this.state.message.length > 280) {
+      return;
+    }
+
     this.setState({ message: event.target.value });
   };
 
   submitMessage = event => {
+    if (!this.props.authUser) {
+      this.setState({ alertOpen: true });
+      return;
+    }
+
     const newMessage = { message: this.state.message };
     const messages = [];
 
@@ -58,14 +70,24 @@ class Chat extends Component {
           display_name: this.props.authUser.displayName,
         });
 
-        this.setState({ messages: messages, message: '' });
+        this.setState({ messages: messages, message: '', alertOpen: false });
       })
       .catch(err => console.log(err));
   };
 
+  closeAlert = () => {
+    this.setState({ alertOpen: false });
+  };
+
+  signOut = () => {
+    this.props.signOut().then(data => {
+      antMessage.info('Signed Out');
+    });
+  };
+
   render() {
-    const { messages, message } = this.state;
-    const { signOut, authUser } = this.props;
+    const { messages, message, alertOpen } = this.state;
+    const { authUser } = this.props;
     let UserAvatar = null;
 
     if (authUser) {
@@ -82,7 +104,7 @@ class Chat extends Component {
             <h2>Karma Chat</h2>
           </Link>
           <p>Welcome, {authUser ? authUser.displayName : 'Guest'}</p>
-          <Button onClick={signOut}>Sign Out</Button>
+          <Button onClick={this.signOut}>Sign Out</Button>
         </Header>
         <Content className="content">
           <Row type="flex" justify="center">
@@ -112,6 +134,16 @@ class Chat extends Component {
                           avatar={UserAvatar}
                           content={
                             <>
+                              {alertOpen ? (
+                                <Alert
+                                  className="alert"
+                                  message="You need to be logged in to comment"
+                                  type="warning"
+                                  onClose={this.closeAlert}
+                                  showIcon
+                                  closable
+                                />
+                              ) : null}
                               <Form.Item>
                                 <TextArea
                                   onChange={this.handleChange}
