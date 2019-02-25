@@ -139,14 +139,14 @@ io.on('connection', socket => {
   socket.on('join general', user => {
     socket.join('general', () => {
       onlineUsers[socket.id] = {
-        photoURL: user.photoURL,
-        displayName: user.displayName,
+        photo_url: user.photoURL,
+        display_name: user.displayName,
       };
 
       console.log('online: ', onlineUsers);
-      socket.to('general').emit('new user connected', user);
+      socket.to('general').emit('new user connected', onlineUsers);
 
-      //io.to(`${socket.id}`).emit('update online user list', onlineUsers);
+      io.to(`${socket.id}`).emit('update online user list', onlineUsers);
     });
   });
 

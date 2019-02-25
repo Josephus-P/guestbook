@@ -73,6 +73,33 @@ class Chat extends Component {
 
       this.setState({ messages: messages });
     });
+
+    this.socket.on('new user connected', users => {
+      let onlineUsers = [];
+
+      for (let user in users) {
+        onlineUsers.push(users[user]);
+      }
+      this.setState({ users: onlineUsers });
+    });
+
+    this.socket.on('update online user list', users => {
+      let onlineUsers = [];
+
+      for (let user in users) {
+        onlineUsers.push(users[user]);
+      }
+      this.setState({ users: onlineUsers });
+    });
+
+    this.socket.on('user disconnected', users => {
+      let onlineUsers = [];
+
+      for (let user in users) {
+        onlineUsers.push(users[user]);
+      }
+      this.setState({ users: onlineUsers });
+    });
   }
 
   componentDidUpdate(prevProps) {
@@ -81,8 +108,8 @@ class Chat extends Component {
     if (authUser && authUser !== prevProps.authUser) {
       console.log('update: socket');
       this.socket.emit('join general', {
-        displayName: authUser.displayName,
-        photoURL: authUser.photoURL,
+        display_name: authUser.displayName,
+        photo_url: authUser.photoURL,
       });
     }
   }
@@ -151,9 +178,10 @@ class Chat extends Component {
   };
 
   render() {
-    const { messages, message, alertOpen, submitting } = this.state;
+    const { messages, message, alertOpen, submitting, users } = this.state;
     const { authUser } = this.props;
     let UserAvatar = null;
+    console.log(users);
 
     if (authUser) {
       UserAvatar = (
@@ -162,6 +190,7 @@ class Chat extends Component {
     } else {
       UserAvatar = <Avatar icon="user" />;
     }
+
     return (
       <Layout className="chat">
         <Header className="header">
@@ -185,7 +214,16 @@ class Chat extends Component {
               <Card>
                 <Tabs tabPosition="top" defaultActiveKey="2" size="large">
                   <TabPane tab="Online Users" key="1">
-                    Online
+                    {authUser
+                      ? users.map((user, index) => (
+                          <Row key={index}>
+                            <Col xs={24} className="online-users">
+                              <Avatar src={user.photo_url} />
+                              <p>{user.display_name}</p>
+                            </Col>
+                          </Row>
+                        ))
+                      : 'Login to see online users'}
                   </TabPane>
                   <TabPane tab="General" key="2">
                     <Row className="tab-general">

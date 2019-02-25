@@ -31,11 +31,13 @@
         }
       }
     }
+
     div {
       @media (max-width: 560px) {
         width: 100%;
       }
     }
+
     p {
       text-align: center;
       @media (max-width: 560px) {
@@ -49,15 +51,26 @@
     }
   }
 
-  .tab-general {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    min-height: 60vh;
-  }
-
   .content {
     margin-top: 50px;
+
+    .tab-general {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: 60vh;
+    }
+
+    .online-users {
+      display: flex;
+      width: 100%;
+      padding: 1rem;
+
+      p {
+        padding-left: 1rem;
+        align-self: center;
+      }
+    }
 
     .alert {
       margin-bottom: 10px;
