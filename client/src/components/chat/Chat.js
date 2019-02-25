@@ -132,7 +132,7 @@ class Chat extends Component {
     const { authUser } = this.props;
 
     if (!authUser) {
-      this.setState({ alertOpen: true });
+      this.setState({ alertOpen: true, submitting: false });
       return;
     }
 
