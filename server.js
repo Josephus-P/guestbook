@@ -134,16 +134,18 @@ app.post('/comments', verifyToken, (req, res) => {
 /***************************** Socket IO events *****************************/
 
 io.on('connection', socket => {
-  console.log('a user connected');
+  console.log('a user onnected');
 
   socket.on('join general', user => {
+    console.log('join:\n', user);
     socket.join('general', () => {
+      console.log('user\n', user);
       onlineUsers[socket.id] = {
-        photo_url: user.photoURL,
-        display_name: user.displayName,
+        photo_url: user.photo_url,
+        display_name: user.display_name,
       };
 
-      console.log('online: ', onlineUsers);
+      console.log('online:\n', onlineUsers);
       socket.to('general').emit('new user connected', onlineUsers);
 
       io.to(`${socket.id}`).emit('update online user list', onlineUsers);
@@ -156,6 +158,7 @@ io.on('connection', socket => {
 
   socket.on('disconnect', () => {
     delete onlineUsers[socket.id];
+    console.log('disconnect:\n', onlineUsers);
     socket.to('general').emit('user disconnected', onlineUsers);
 
     console.log('user disconnected');

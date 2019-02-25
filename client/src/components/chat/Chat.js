@@ -22,7 +22,7 @@ import Axios from 'axios';
 
 const TabPane = Tabs.TabPane;
 const TextArea = Input.TextArea;
-const { Header, Content } = Layout;
+const { Header, Content, Footer } = Layout;
 const url =
   process.env.NODE_ENV === 'production'
     ? 'https://karma-chat-jp.herokuapp.com/'
@@ -57,8 +57,8 @@ class Chat extends Component {
 
     if (authUser) {
       this.socket.emit('join general', {
-        displayName: authUser.displayName,
-        photoURL: authUser.photoURL,
+        display_name: authUser.displayName,
+        photo_url: authUser.photoURL,
       });
     }
 
@@ -174,6 +174,7 @@ class Chat extends Component {
   signOut = () => {
     this.props.signOut().then(data => {
       antMessage.info('Signed Out');
+      this.socket.close();
     });
   };
 
@@ -282,6 +283,7 @@ class Chat extends Component {
             </Col>
           </Row>
         </Content>
+        <Footer />
       </Layout>
     );
   }
