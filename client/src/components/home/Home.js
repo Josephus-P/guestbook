@@ -15,7 +15,6 @@ class Home extends Component {
     this.props
       .signInGoogle()
       .then(socialAuthUser => {
-        console.log('login: ', socialAuthUser);
         this.setState({ error: null });
       })
       .catch(error => {
@@ -24,7 +23,6 @@ class Home extends Component {
   };
 
   render() {
-    console.log(this.props);
     const { authUser } = this.props;
 
     if (authUser) {

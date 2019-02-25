@@ -212,7 +212,7 @@ class Chat extends Component {
     const { messages, message, alertOpen, submitting, users } = this.state;
     const { authUser } = this.props;
     let UserAvatar = null;
-    console.log(messages);
+
     if (authUser) {
       UserAvatar = (
         <Avatar src={authUser.photoURL} alt={authUser.displayName} />
