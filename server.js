@@ -1,13 +1,17 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv').config();
-const server = express();
+const app = express();
 const port = process.env.PORT || 5000;
 const admin = require('firebase-admin');
 const db = require('./db/dbConfig');
+const server = require('http').Server(app);
+const io = require('socket.io')(server);
 
-server.use(express.json());
-server.use(cors());
+const onlineUsers = {};
+
+app.use(express.json());
+app.use(cors());
 
 admin.initializeApp({
   credential: admin.credential.cert({
@@ -43,14 +47,14 @@ async function verifyToken(req, res, next) {
   }
 }
 
-server.use('/login', verifyToken);
+app.use('/login', verifyToken);
 
-server.get('/', (req, res) => {
+app.get('/', (req, res) => {
   res.status(200).send('Hello World');
 });
 
 // Login user
-server.post('/login', (req, res) => {
+app.post('/login', (req, res) => {
   const { uid, displayName, photoURL } = req.body;
   const user = {
     uid: uid,
@@ -96,7 +100,7 @@ server.post('/login', (req, res) => {
     });
 });
 
-server.get('/comments', (req, res) => {
+app.get('/comments', (req, res) => {
   db('messages as m')
     .join('users as u', 'm.user_uid', 'u.uid')
     .then(data => {
@@ -108,7 +112,7 @@ server.get('/comments', (req, res) => {
     });
 });
 
-server.post('/comments', verifyToken, (req, res) => {
+app.post('/comments', verifyToken, (req, res) => {
   console.log('/comments ', req.body);
   const { uid, message } = req.body;
   const comment = {
@@ -125,6 +129,37 @@ server.post('/comments', verifyToken, (req, res) => {
       console.log(err);
       res.status(500).send('Error posting comment');
     });
+});
+
+/***************************** Socket IO events *****************************/
+
+io.on('connection', socket => {
+  console.log('a user connected');
+
+  socket.on('join general', user => {
+    socket.join('general', () => {
+      onlineUsers[socket.id] = {
+        photoURL: user.photoURL,
+        displayName: user.displayName,
+      };
+
+      console.log('online: ', onlineUsers);
+      socket.to('general').emit('new user connected', user);
+
+      //io.to(`${socket.id}`).emit('update online user list', onlineUsers);
+    });
+  });
+
+  socket.on('general chat', entry => {
+    socket.to('general').emit('general chat entry', entry);
+  });
+
+  socket.on('disconnect', () => {
+    delete onlineUsers[socket.id];
+    socket.to('general').emit('user disconnected', onlineUsers);
+
+    console.log('user disconnected');
+  });
 });
 
 server.listen(port, () => {

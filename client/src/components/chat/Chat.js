@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { withAuthUser } from '../session';
+import io from 'socket.io-client';
 import {
   Row,
   Col,
@@ -22,16 +23,28 @@ import Axios from 'axios';
 const TabPane = Tabs.TabPane;
 const TextArea = Input.TextArea;
 const { Header, Content } = Layout;
+const url =
+  process.env.NODE_ENV === 'production'
+    ? 'https://karma-chat-jp.herokuapp.com/'
+    : 'http://localhost:5000';
 
 class Chat extends Component {
-  state = {
-    messages: [],
-    message: '',
-    error: null,
-    alertOpen: false,
-  };
+  constructor(props) {
+    super(props);
+    this.socket = io(url);
+
+    this.state = {
+      messages: [],
+      message: '',
+      error: null,
+      alertOpen: false,
+      users: [],
+    };
+  }
 
   componentDidMount() {
+    const { authUser } = this.props;
+
     Axios.get('/comments')
       .then(response => {
         console.log(response.data);
@@ -40,6 +53,41 @@ class Chat extends Component {
       .catch(err => {
         this.setState({ error: err });
       });
+
+    if (authUser) {
+      this.socket.emit('join general', {
+        displayName: authUser.displayName,
+        photoURL: authUser.photoURL,
+      });
+    }
+
+    this.socket.on('general chat entry', entry => {
+      const messages = [];
+
+      this.state.messages.forEach(entry => {
+        messages.push({ ...entry });
+      });
+
+      messages.push(entry);
+
+      this.setState({ messages: messages });
+    });
+  }
+
+  componentDidUpdate(prevProps) {
+    const { authUser } = this.props;
+
+    if (authUser && authUser !== prevProps.authUser) {
+      console.log('update: socket');
+      this.socket.emit('join general', {
+        displayName: authUser.displayName,
+        photoURL: authUser.photoURL,
+      });
+    }
+  }
+
+  componentWillUnmount() {
+    this.socket.close();
   }
 
   handleChange = event => {
@@ -51,12 +99,14 @@ class Chat extends Component {
   };
 
   submitMessage = event => {
-    if (!this.props.authUser) {
+    const { authUser } = this.props;
+
+    if (!authUser) {
       this.setState({ alertOpen: true });
       return;
     }
 
-    const newMessage = { message: this.state.message };
+    let newMessage = { message: this.state.message };
     const messages = [];
 
     Axios.post('/comments', newMessage)
@@ -64,12 +114,16 @@ class Chat extends Component {
         this.state.messages.forEach(message => {
           messages.push(message);
         });
-        messages.push({
-          ...newMessage,
-          photo_url: this.props.authUser.photoURL,
-          display_name: this.props.authUser.displayName,
-        });
 
+        newMessage = {
+          ...newMessage,
+          photo_url: authUser.photoURL,
+          display_name: authUser.displayName,
+        };
+
+        messages.push(newMessage);
+
+        this.socket.emit('general chat', newMessage);
         this.setState({ messages: messages, message: '', alertOpen: false });
       })
       .catch(err => console.log(err));
