@@ -103,6 +103,14 @@ app.post('/login', (req, res) => {
 app.get('/comments', (req, res) => {
   db('messages as m')
     .join('users as u', 'm.user_uid', 'u.uid')
+    .select(
+      'm.id',
+      'm.created_date',
+      'm.message',
+      'u.display_name',
+      'u.photo_url',
+      'm.total_karma'
+    )
     .then(data => {
       res.status(200).json(data);
     })
@@ -114,10 +122,12 @@ app.get('/comments', (req, res) => {
 
 app.post('/comments', verifyToken, (req, res) => {
   console.log('/comments ', req.body);
-  const { uid, message } = req.body;
+  const { uid, message, created_date, total_karma } = req.body;
   const comment = {
     user_uid: uid,
     message: message,
+    created_date: created_date,
+    total_karma: total_karma,
   };
 
   db('messages')
@@ -131,6 +141,18 @@ app.post('/comments', verifyToken, (req, res) => {
     });
 });
 
+app.put('/comments/:id/karma', verifyToken, (req, res) => {
+  const { id } = req.params;
+
+  db('messages')
+    .where('id', id)
+    .increment('total_karma', 1)
+    .then(data => res.status(200).send('updated karma'))
+    .catch(err => {
+      console.log(err);
+      res.status(500).send('Error updating comment');
+    });
+});
 /***************************** Socket IO events *****************************/
 
 io.on('connection', socket => {

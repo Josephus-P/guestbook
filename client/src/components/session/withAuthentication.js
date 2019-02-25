@@ -15,7 +15,6 @@ const withAuthentication = Component => {
 
     componentDidMount() {
       this.listener = this.props.firebase.auth.onAuthStateChanged(authUser => {
-        console.log(authUser);
         if (authUser) {
           return this.props.firebase.auth.currentUser
             .getIdToken()

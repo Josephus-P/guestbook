@@ -6,6 +6,8 @@ exports.up = function(knex, Promise) {
       .references('uid')
       .inTable('users');
     tbl.string('message');
+    tbl.string('created_date');
+    tbl.integer('total_karma').defaultTo(0);
   });
 };
 

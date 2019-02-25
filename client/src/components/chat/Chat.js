@@ -16,9 +16,11 @@ import {
   Avatar,
   Alert,
   message as antMessage,
+  Tag,
 } from 'antd';
 import './chat.scss';
 import Axios from 'axios';
+import moment from 'moment';
 
 const TabPane = Tabs.TabPane;
 const TextArea = Input.TextArea;
@@ -48,7 +50,6 @@ class Chat extends Component {
 
     Axios.get('/comments')
       .then(response => {
-        console.log(response.data);
         this.setState({ messages: response.data });
       })
       .catch(err => {
@@ -106,7 +107,6 @@ class Chat extends Component {
     const { authUser } = this.props;
 
     if (authUser && authUser !== prevProps.authUser) {
-      console.log('update: socket');
       this.socket.emit('join general', {
         display_name: authUser.displayName,
         photo_url: authUser.photoURL,
@@ -136,7 +136,11 @@ class Chat extends Component {
       return;
     }
 
-    let newMessage = { message: this.state.message };
+    let newMessage = {
+      message: this.state.message,
+      created_date: moment().format(),
+      total_karma: 0,
+    };
     const messages = [];
 
     Axios.post('/comments', newMessage)
@@ -146,6 +150,7 @@ class Chat extends Component {
         });
 
         newMessage = {
+          id: response.data[0],
           ...newMessage,
           photo_url: authUser.photoURL,
           display_name: authUser.displayName,
@@ -167,6 +172,31 @@ class Chat extends Component {
       });
   };
 
+  addKarma = event => {
+    if (!this.props.authUser) {
+      antMessage.warning('You must be logged in!');
+      return;
+    }
+    const id = event.currentTarget.getAttribute('data-id');
+    const messages = [];
+    let total_karma = 0;
+
+    this.state.messages.forEach(message => {
+      if (message.id === parseInt(id)) {
+        total_karma = message.total_karma + 1;
+        messages.push({ ...message, total_karma: total_karma });
+      } else {
+        messages.push({ ...message });
+      }
+    });
+
+    Axios.put(`/comments/${id}/karma`)
+      .then(response => {
+        this.setState({ messages: messages });
+      })
+      .catch(err => console.log(err));
+  };
+
   closeAlert = () => {
     this.setState({ alertOpen: false });
   };
@@ -182,8 +212,7 @@ class Chat extends Component {
     const { messages, message, alertOpen, submitting, users } = this.state;
     const { authUser } = this.props;
     let UserAvatar = null;
-    console.log(users);
-
+    console.log(messages);
     if (authUser) {
       UserAvatar = (
         <Avatar src={authUser.photoURL} alt={authUser.displayName} />
@@ -237,6 +266,20 @@ class Chat extends Component {
                               avatar={<Avatar src={message.photo_url} />}
                               author={message.display_name}
                               content={<p>{message.message}</p>}
+                              datetime={moment(message.created_date).fromNow()}
+                              actions={[
+                                <Tag
+                                  data-id={message.id}
+                                  onClick={this.addKarma}
+                                  color={
+                                    message.total_karma < 100
+                                      ? 'purple'
+                                      : 'gold'
+                                  }
+                                >
+                                  {message.total_karma} Karma
+                                </Tag>,
+                              ]}
                             />
                           )}
                         />
