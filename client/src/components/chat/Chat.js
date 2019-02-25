@@ -39,6 +39,7 @@ class Chat extends Component {
       error: null,
       alertOpen: false,
       users: [],
+      submitting: false,
     };
   }
 
@@ -99,6 +100,8 @@ class Chat extends Component {
   };
 
   submitMessage = event => {
+    this.setState({ submitting: true });
+
     const { authUser } = this.props;
 
     if (!authUser) {
@@ -124,9 +127,17 @@ class Chat extends Component {
         messages.push(newMessage);
 
         this.socket.emit('general chat', newMessage);
-        this.setState({ messages: messages, message: '', alertOpen: false });
+        this.setState({
+          messages: messages,
+          message: '',
+          alertOpen: false,
+          submitting: false,
+        });
       })
-      .catch(err => console.log(err));
+      .catch(err => {
+        console.log(err);
+        this.setState({ submitting: false });
+      });
   };
 
   closeAlert = () => {
@@ -140,7 +151,7 @@ class Chat extends Component {
   };
 
   render() {
-    const { messages, message, alertOpen } = this.state;
+    const { messages, message, alertOpen, submitting } = this.state;
     const { authUser } = this.props;
     let UserAvatar = null;
 
@@ -216,6 +227,7 @@ class Chat extends Component {
                               <Form.Item>
                                 <Button
                                   htmlType="submit"
+                                  loading={submitting}
                                   onClick={this.submitMessage}
                                 >
                                   Add Comment
