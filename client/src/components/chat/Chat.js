@@ -104,7 +104,15 @@ class Chat extends Component {
             <h2>Karma Chat</h2>
           </Link>
           <p>Welcome, {authUser ? authUser.displayName : 'Guest'}</p>
-          <Button onClick={this.signOut}>Sign Out</Button>
+          {authUser ? (
+            <div className="login">
+              <Button onClick={this.signOut}>Sign Out</Button>
+            </div>
+          ) : (
+            <Link className="login" to="/">
+              <Button>Login</Button>
+            </Link>
+          )}
         </Header>
         <Content className="content">
           <Row type="flex" justify="center">

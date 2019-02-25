@@ -12,7 +12,8 @@
 
     h2,
     p,
-    a {
+    a,
+    div {
       width: 33%;
       display: inline-block;
       color: white;
@@ -30,10 +31,21 @@
         }
       }
     }
+    div {
+      @media (max-width: 560px) {
+        width: 100%;
+      }
+    }
     p {
+      text-align: center;
       @media (max-width: 560px) {
         display: none;
       }
+    }
+
+    .login {
+      display: flex;
+      justify-content: flex-end;
     }
   }
 
