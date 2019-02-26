@@ -17,6 +17,7 @@ import {
   Alert,
   message as antMessage,
   Tag,
+  Icon,
 } from 'antd';
 import './chat.scss';
 import Axios from 'axios';
@@ -133,9 +134,16 @@ class Chat extends Component {
   };
 
   submitMessage = event => {
-    this.setState({ submitting: true });
-
+    let message = this.state.message.trim();
     const { authUser } = this.props;
+    const messages = [];
+    let slicedMessages = [];
+
+    if (message === '') {
+      return;
+    }
+
+    this.setState({ submitting: true });
 
     if (!authUser) {
       this.setState({ alertOpen: true, submitting: false });
@@ -143,12 +151,11 @@ class Chat extends Component {
     }
 
     let newMessage = {
-      message: this.state.message,
+      message: message,
       created_date: moment().format(),
       total_karma: 0,
     };
-    const messages = [];
-    let slicedMessages = [];
+
     Axios.post('/comments', newMessage)
       .then(response => {
         this.state.messages.forEach(message => {
@@ -208,10 +215,6 @@ class Chat extends Component {
       .catch(err => console.log(err));
   };
 
-  closeAlert = () => {
-    this.setState({ alertOpen: false });
-  };
-
   signOut = () => {
     this.props.signOut().then(data => {
       antMessage.info('Signed Out');
@@ -223,7 +226,6 @@ class Chat extends Component {
     const { messages, message, alertOpen, submitting, users } = this.state;
     const { authUser } = this.props;
     let UserAvatar = null;
-    console.log(messages);
 
     if (authUser) {
       UserAvatar = (
@@ -306,7 +308,9 @@ class Chat extends Component {
                                   className="alert"
                                   message="You need to be logged in to comment"
                                   type="warning"
-                                  onClose={this.closeAlert}
+                                  onClose={() =>
+                                    this.setState({ alertOpen: false })
+                                  }
                                   showIcon
                                   closable
                                 />
@@ -338,7 +342,19 @@ class Chat extends Component {
             </Col>
           </Row>
         </Content>
-        <Footer />
+        <Footer className="footer">
+          <a
+            className="link-github"
+            href="https://github.com/Josephus-P/guestbook"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <Icon
+              style={{ fontSize: '32px', color: 'inherit' }}
+              type="github"
+            />
+          </a>
+        </Footer>
       </Layout>
     );
   }
