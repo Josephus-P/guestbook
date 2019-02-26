@@ -22,6 +22,19 @@ class Home extends Component {
       });
   };
 
+  loginFacebook = event => {
+    event.preventDefault();
+
+    this.props
+      .signInFacebook()
+      .then(socialAuthUser => {
+        this.setState({ error: null });
+      })
+      .catch(error => {
+        this.setState({ error });
+      });
+  };
+
   render() {
     const { authUser } = this.props;
 
@@ -34,7 +47,10 @@ class Home extends Component {
         <Row type="flex" justify="center">
           <Col xs={24} xl={16} xxl={12}>
             <h1>Karma Chat</h1>
-            <p>Post positive instant messages and get Karma points!</p>
+            <p style={{ padding: '2rem', fontSize: '24px' }}>
+              Post positive messages, quotes and stories in real-time and get
+              Karma points!
+            </p>
           </Col>
         </Row>
         <Row type="flex" justify="center">
@@ -47,14 +63,28 @@ class Home extends Component {
               </Row>
               <Row type="flex" justify="center">
                 <Col xs={24} xl={16} xxl={12}>
-                  <Button onClick={this.loginGoogle} block>
+                  <Button
+                    className="button-google"
+                    icon="google"
+                    onClick={this.loginGoogle}
+                    size="large"
+                    block
+                  >
                     Login with Google
                   </Button>
                 </Col>
               </Row>
               <Row type="flex" justify="center">
                 <Col xs={24} xl={16} xxl={12}>
-                  <Button block>Login with Facebook</Button>
+                  <Button
+                    className="button-fb"
+                    icon="facebook"
+                    onClick={this.loginFacebook}
+                    size="large"
+                    block
+                  >
+                    Login with Facebook
+                  </Button>
                 </Col>
               </Row>
               <Row type="flex" justify="center">
@@ -65,7 +95,9 @@ class Home extends Component {
               <Row type="flex" justify="center">
                 <Col xs={24} xl={16} xxl={12}>
                   <Link to="/chat">
-                    <Button block>Browse as Guest</Button>
+                    <Button size="large" block>
+                      Browse as Guest
+                    </Button>
                   </Link>
                 </Col>
               </Row>

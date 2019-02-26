@@ -99,6 +99,10 @@
 
     .link-github {
       color: inherit;
+
+      &:hover {
+        color: #9d77fc;
+      }
     }
   }
 }

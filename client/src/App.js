@@ -13,7 +13,12 @@ class App extends Component {
         <Route
           exact
           path="/"
-          render={() => <Home signInGoogle={firebase.doSignInWithGoogle} />}
+          render={() => (
+            <Home
+              signInGoogle={firebase.doSignInWithGoogle}
+              signInFacebook={firebase.doSignInWithFacebook}
+            />
+          )}
         />
         <Route
           path="/chat"
