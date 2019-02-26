@@ -1,8 +1,8 @@
 # Table of Contents
 
 - [Getting Started](#getting-started)
-  - [What You Need](#what-you-need)
-  - [Running The App Locally](#running-the-app-locally)
+    - [What You Need](#what-you-need)
+    - [Running The App Locally](#running-the-app-locally)
 
 # Getting Started
 
@@ -32,7 +32,6 @@ REACT_APP_MESSAGING_SENDER_ID=
 The environment variable names should look like this:
 
 ```
-FIREBASE_DB_URL=
 FIREBASE_TYPE=
 FIREBASE_PROJECT_ID=
 FIREBASE_PRIVATE_KEY_ID=
@@ -44,3 +43,11 @@ FIREBASE_TOKEN_URI=
 FIREBASE_AUTH_PROVIDER_X509_CERT_URL=
 FIREBASE_CLIENT_X509_CERT_URL=
 ```
+
+## Running the App Locally
+- Fork and/or clone the repository
+- Run `yarn install` in the root directory to install server dependencies
+- Run `knex migrate:latest` to setup the local database (Make sure you have the `Knex CLI` installed).
+- Run `yarn dev` in the root directory to start the server with nodemon
+- Run `yarn install` in the client directory to install client dependencies
+- Run `yarn start` in the client directory to start the client app
