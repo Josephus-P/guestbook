@@ -50,7 +50,7 @@ class Chat extends Component {
 
     Axios.get('/comments')
       .then(response => {
-        this.setState({ messages: response.data });
+        this.setState({ messages: response.data.reverse() });
       })
       .catch(err => {
         this.setState({ error: err });
@@ -65,14 +65,20 @@ class Chat extends Component {
 
     this.socket.on('general chat entry', entry => {
       const messages = [];
+      let slicedMessages = [];
 
       this.state.messages.forEach(entry => {
         messages.push({ ...entry });
       });
 
       messages.push(entry);
+      if (messages.length > 6) {
+        slicedMessages = messages.slice(messages.length - 6, messages.length);
+      } else {
+        slicedMessages = messages.slice(0, 5);
+      }
 
-      this.setState({ messages: messages });
+      this.setState({ messages: slicedMessages });
     });
 
     this.socket.on('new user connected', users => {
@@ -142,7 +148,7 @@ class Chat extends Component {
       total_karma: 0,
     };
     const messages = [];
-
+    let slicedMessages = [];
     Axios.post('/comments', newMessage)
       .then(response => {
         this.state.messages.forEach(message => {
@@ -157,10 +163,15 @@ class Chat extends Component {
         };
 
         messages.push(newMessage);
+        if (messages.length > 6) {
+          slicedMessages = messages.slice(messages.length - 6, messages.length);
+        } else {
+          slicedMessages = messages.slice(0, 5);
+        }
 
         this.socket.emit('general chat', newMessage);
         this.setState({
-          messages: messages,
+          messages: slicedMessages,
           message: '',
           alertOpen: false,
           submitting: false,
@@ -212,6 +223,7 @@ class Chat extends Component {
     const { messages, message, alertOpen, submitting, users } = this.state;
     const { authUser } = this.props;
     let UserAvatar = null;
+    console.log(messages);
 
     if (authUser) {
       UserAvatar = (
@@ -243,7 +255,7 @@ class Chat extends Component {
             <Col xs={24} md={20} xl={16} xxl={12}>
               <Card>
                 <Tabs tabPosition="top" defaultActiveKey="2" size="large">
-                  <TabPane tab="Online Users" key="1">
+                  <TabPane className="tab-online" tab="Online Users" key="1">
                     {authUser
                       ? users.map((user, index) => (
                           <Row key={index}>

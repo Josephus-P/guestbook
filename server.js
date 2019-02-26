@@ -111,6 +111,8 @@ app.get('/comments', (req, res) => {
       'u.photo_url',
       'm.total_karma'
     )
+    .orderBy('m.id', 'desc')
+    .limit(6)
     .then(data => {
       res.status(200).json(data);
     })

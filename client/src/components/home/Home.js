@@ -34,7 +34,7 @@ class Home extends Component {
         <Row type="flex" justify="center">
           <Col xs={24} xl={16} xxl={12}>
             <h1>Karma Chat</h1>
-            <p>Post positive messages in real-time and get Karma points!</p>
+            <p>Post positive instant messages and get Karma points!</p>
           </Col>
         </Row>
         <Row type="flex" justify="center">
