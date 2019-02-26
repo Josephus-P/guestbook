@@ -15,7 +15,6 @@ class Home extends Component {
     this.props
       .signInGoogle()
       .then(socialAuthUser => {
-        console.log('login: ', socialAuthUser);
         this.setState({ error: null });
       })
       .catch(error => {
@@ -24,7 +23,6 @@ class Home extends Component {
   };
 
   render() {
-    console.log(this.props);
     const { authUser } = this.props;
 
     if (authUser) {
@@ -36,7 +34,7 @@ class Home extends Component {
         <Row type="flex" justify="center">
           <Col xs={24} xl={16} xxl={12}>
             <h1>Karma Chat</h1>
-            <p>Post positive messages in real-time and get Karma points!</p>
+            <p>Post positive instant messages and get Karma points!</p>
           </Col>
         </Row>
         <Row type="flex" justify="center">

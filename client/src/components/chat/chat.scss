@@ -52,12 +52,21 @@
   }
 
   .content {
-    margin-top: 50px;
+    @media (min-width: 560px) {
+      margin-top: 50px;
+    }
 
     .tab-general {
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
+      min-height: 60vh;
+    }
+
+    .tab-online {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
       min-height: 60vh;
     }
 

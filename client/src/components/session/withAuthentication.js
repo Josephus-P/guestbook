@@ -38,7 +38,6 @@ const withAuthentication = Component => {
                 });
             });
         } else {
-          // localStorage.setItem('authUser', null);
           this.setState({ authUser: null, authTokenRecieved: false });
         }
       });
