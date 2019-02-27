@@ -132,7 +132,7 @@ app.post('/comments', verifyToken, (req, res) => {
   };
 
   db('messages')
-    .insert(comment)
+    .insert(comment, ['id'])
     .then(data => {
       res.status(201).json(data);
     })
