@@ -22,6 +22,7 @@ import {
 import './chat.scss';
 import Axios from 'axios';
 import moment from 'moment';
+import { auth } from 'firebase';
 
 const TabPane = Tabs.TabPane;
 const TextArea = Input.TextArea;
@@ -59,6 +60,7 @@ class Chat extends Component {
 
     if (authUser) {
       this.socket.emit('join general', {
+        uid: authUser.uid,
         display_name: authUser.displayName,
         photo_url: authUser.photoURL,
       });
@@ -115,6 +117,7 @@ class Chat extends Component {
 
     if (authUser && authUser !== prevProps.authUser) {
       this.socket.emit('join general', {
+        uid: authUser.uid,
         display_name: authUser.displayName,
         photo_url: authUser.photoURL,
       });
@@ -161,7 +164,7 @@ class Chat extends Component {
         this.state.messages.forEach(message => {
           messages.push(message);
         });
-
+        console.log(response.data);
         newMessage = {
           id: response.data[0],
           ...newMessage,
@@ -275,23 +278,23 @@ class Chat extends Component {
                         <List
                           className="list"
                           dataSource={messages}
-                          renderItem={message => (
+                          renderItem={comment => (
                             <Comment
-                              avatar={<Avatar src={message.photo_url} />}
-                              author={message.display_name}
-                              content={<p>{message.message}</p>}
-                              datetime={moment(message.created_date).fromNow()}
+                              avatar={<Avatar src={comment.photo_url} />}
+                              author={comment.display_name}
+                              content={<p>{comment.message}</p>}
+                              datetime={moment(comment.created_date).fromNow()}
                               actions={[
                                 <Tag
-                                  data-id={message.id}
+                                  data-id={comment.id}
                                   onClick={this.addKarma}
                                   color={
-                                    message.total_karma < 100
+                                    comment.total_karma < 100
                                       ? 'purple'
                                       : 'gold'
                                   }
                                 >
-                                  {message.total_karma} Karma
+                                  {comment.total_karma} Karma
                                 </Tag>,
                               ]}
                             />

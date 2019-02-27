@@ -161,10 +161,17 @@ io.on('connection', socket => {
 
   socket.on('join general', user => {
     socket.join('general', () => {
-      onlineUsers[socket.id] = {
-        photo_url: user.photo_url,
-        display_name: user.display_name,
-      };
+      socket.user_uid = user.uid;
+
+      if (onlineUsers[user.uid]) {
+        onlineUsers[user.uid].instances += 1;
+      } else {
+        onlineUsers[user.uid] = {
+          photo_url: user.photo_url,
+          display_name: user.display_name,
+          instances: 1,
+        };
+      }
 
       socket.to('general').emit('new user connected', onlineUsers);
 
@@ -177,7 +184,12 @@ io.on('connection', socket => {
   });
 
   socket.on('disconnect', () => {
-    delete onlineUsers[socket.id];
+    if (onlineUsers[socket.user_uid].instances > 1) {
+      onlineUsers[socket.user_uid].instances -= 1;
+    } else {
+      delete onlineUsers[socket.user_uid];
+    }
+
     socket.to('general').emit('user disconnected', onlineUsers);
 
     console.log('user disconnected');
