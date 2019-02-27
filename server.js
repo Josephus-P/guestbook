@@ -184,7 +184,10 @@ io.on('connection', socket => {
   });
 
   socket.on('disconnect', () => {
-    if (onlineUsers[socket.user_uid].instances > 1) {
+    if (
+      onlineUsers[socket.user_uid] &&
+      onlineUsers[socket.user_uid].instances > 1
+    ) {
       onlineUsers[socket.user_uid].instances -= 1;
     } else {
       delete onlineUsers[socket.user_uid];
