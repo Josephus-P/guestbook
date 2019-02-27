@@ -22,7 +22,6 @@ import {
 import './chat.scss';
 import Axios from 'axios';
 import moment from 'moment';
-import { auth } from 'firebase';
 
 const TabPane = Tabs.TabPane;
 const TextArea = Input.TextArea;
@@ -164,7 +163,7 @@ class Chat extends Component {
         this.state.messages.forEach(message => {
           messages.push(message);
         });
-        console.log(response.data);
+
         newMessage = {
           id: response.data[0].id,
           ...newMessage,
