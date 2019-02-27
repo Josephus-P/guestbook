@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import { withAuthUser } from '../session';
-import { Row, Col, Card, Button } from 'antd';
+import { Row, Col, Card, Button, Spin } from 'antd';
 import './home.scss';
 
 class Home extends Component {
@@ -36,8 +36,15 @@ class Home extends Component {
   };
 
   render() {
-    const { authUser } = this.props;
-
+    const { authUser, loading } = this.props;
+    console.log(loading);
+    if (loading) {
+      return (
+        <div className="spinner">
+          <Spin size="large" />
+        </div>
+      );
+    }
     if (authUser) {
       return <Redirect to="/chat" />;
     }
