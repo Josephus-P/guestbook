@@ -165,6 +165,7 @@ io.on('connection', socket => {
 
       if (onlineUsers[user.uid]) {
         onlineUsers[user.uid].instances += 1;
+        console.log(onlineUsers[user.uid]);
       } else {
         onlineUsers[user.uid] = {
           photo_url: user.photo_url,
@@ -184,8 +185,12 @@ io.on('connection', socket => {
   });
 
   socket.on('disconnect', () => {
-    if (onlineUsers[socket.user_uid].instances > 1) {
+    if (
+      onlineUsers[socket.user_uid] &&
+      onlineUsers[socket.user_uid].instances > 1
+    ) {
       onlineUsers[socket.user_uid].instances -= 1;
+      console.log(onlineUsers[socket.user_uid]);
     } else {
       delete onlineUsers[socket.user_uid];
     }
