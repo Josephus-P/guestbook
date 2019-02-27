@@ -74,7 +74,7 @@ class Home extends Component {
                   </Button>
                 </Col>
               </Row>
-              <Row type="flex" justify="center">
+              {/* <Row type="flex" justify="center">
                 <Col xs={24} xl={16} xxl={12}>
                   <Button
                     className="button-fb"
@@ -86,7 +86,7 @@ class Home extends Component {
                     Login with Facebook
                   </Button>
                 </Col>
-              </Row>
+              </Row> */}
               <Row type="flex" justify="center">
                 <Col xs={24} xl={16} xxl={12}>
                   <p>OR</p>
