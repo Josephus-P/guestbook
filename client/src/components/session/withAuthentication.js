@@ -10,6 +10,7 @@ const withAuthentication = Component => {
       this.state = {
         authUser: null,
         authTokenRecieved: false,
+        loading: true,
       };
     }
 
@@ -30,15 +31,21 @@ const withAuthentication = Component => {
                   this.setState({
                     authUser: authUser,
                     authTokenRecieved: true,
+                    loading: false,
                   });
                 })
                 .catch(err => {
                   console.log(err);
                   this.props.firebase.doSignOut();
+                  this.setState({ loading: false });
                 });
             });
         } else {
-          this.setState({ authUser: null, authTokenRecieved: false });
+          this.setState({
+            authUser: null,
+            authTokenRecieved: false,
+            loading: false,
+          });
         }
       });
     }
