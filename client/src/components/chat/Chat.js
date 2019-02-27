@@ -166,7 +166,7 @@ class Chat extends Component {
         });
         console.log(response.data);
         newMessage = {
-          id: response.data[0],
+          id: response.data[0].id,
           ...newMessage,
           photo_url: authUser.photoURL,
           display_name: authUser.displayName,
