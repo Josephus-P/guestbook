@@ -160,12 +160,16 @@ class Chat extends Component {
 
     Axios.post('/comments', newMessage)
       .then(response => {
+        // SQLite3 and PostgreSQL return data differently so the next
+        // line sets the id accordingly
+        const id = response.data[0].id ? response.data[0].id : response.data[0];
+
         this.state.messages.forEach(message => {
           messages.push(message);
         });
 
         newMessage = {
-          id: response.data[0].id,
+          id: id,
           ...newMessage,
           photo_url: authUser.photoURL,
           display_name: authUser.displayName,
