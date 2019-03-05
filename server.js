@@ -34,27 +34,22 @@ async function verifyToken(req, res, next) {
   const idToken = req.headers.authorization;
 
   try {
-    await admin
-      .auth()
-      .verifyIdToken(idToken)
-      .then(decodedToken => {
-        req.body.uid = decodedToken.uid;
-        console.log('verified');
-        return next();
-      });
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+
+    req.body.uid = decodedToken.uid;
+
+    return next();
   } catch (e) {
     return res.status(401).send('You are not authorized!');
   }
 }
-
-app.use('/login', verifyToken);
 
 app.get('/', (req, res) => {
   res.status(200).send('Hello World');
 });
 
 // Login user
-app.post('/login', (req, res) => {
+app.post('/login', verifyToken, async (req, res) => {
   const { uid, displayName, photoURL } = req.body;
   const user = {
     uid: uid,
@@ -62,67 +57,58 @@ app.post('/login', (req, res) => {
     photo_url: photoURL,
   };
 
-  db('users')
-    .where('uid', uid)
-    .then(data => {
-      // If the user doesn't exist then register the user
-      if (data.length === 0) {
-        db('users')
-          .insert(user)
-          .then(response => {
-            res.status(201).send('Registered user');
-          })
-          .catch(err => {
-            console.log(err);
-            res.status(500).send('Error creating user');
-          });
-      }
-      // Update the user's details in info has changed
-      else if (
-        data[0].display_name !== displayName ||
-        data[0].photo_url !== photoURL
-      ) {
-        db('users')
-          .where('uid', uid)
-          .update(user)
-          .then(data => res.status(200).json(data))
-          .catch(err => {
-            console.log(err);
-            res.status(500).send('Error updating user');
-          });
-      } else {
-        res.status(200).send('Logged in');
-      }
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(500).send('Error looking for user');
-    });
+  try {
+    const userResult = await db('users').where('uid', uid);
+
+    // If the user doesn't exist then register the user
+    if (userResult.length === 0) {
+      const newUser = await db('users').insert(user);
+      res.status(201).json(newUser);
+    }
+    // Update the user's details if info has changed
+    else if (
+      userResult[0].display_name !== displayName ||
+      userResult[0].photo_url !== photoURL
+    ) {
+      const updatedUser = await db('users')
+        .where('uid', uid)
+        .update(user);
+
+      res.status(200).json(updatedUser);
+    } else {
+      res.status(200).send('Logged in');
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
 });
 
-app.get('/comments', (req, res) => {
-  db('messages as m')
-    .join('users as u', 'm.user_uid', 'u.uid')
-    .select(
-      'm.id',
-      'm.created_date',
-      'm.message',
-      'u.display_name',
-      'u.photo_url',
-      'm.total_karma'
-    )
-    .orderBy('m.id', 'desc')
-    .limit(6)
-    .then(data => {
-      res.status(200).json(data);
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(500).send('Error retrieving comments');
-    });
+// Get all the comments
+app.get('/comments', async (req, res) => {
+  try {
+    const data = await db('messages as m')
+      .join('users as u', 'm.user_uid', 'u.uid')
+      .select(
+        'm.id',
+        'm.created_date',
+        'm.message',
+        'u.display_name',
+        'u.photo_url',
+        'm.total_karma'
+      )
+      .orderBy('m.id', 'desc')
+      .limit(6);
+
+    res.status(200).json(data);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
 });
 
-app.post('/comments', verifyToken, (req, res) => {
+// Insert a new comment into the DB
+app.post('/comments', verifyToken, async (req, res) => {
   const { uid, message, created_date, total_karma } = req.body;
   const comment = {
     user_uid: uid,
@@ -131,33 +117,34 @@ app.post('/comments', verifyToken, (req, res) => {
     total_karma: total_karma,
   };
 
-  db('messages')
-    .insert(comment, ['id'])
-    .then(data => {
-      res.status(201).json(data);
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(500).send('Error posting comment');
-    });
+  try {
+    const data = await db('messages').insert(comment, ['id']);
+    res.status(201).json(data);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Error posting comment' });
+  }
 });
 
-app.put('/comments/:id/karma', verifyToken, (req, res) => {
+// Update a comment's karma count
+app.put('/comments/:id/karma', verifyToken, async (req, res) => {
   const { id } = req.params;
 
-  db('messages')
-    .where('id', id)
-    .increment('total_karma', 1)
-    .then(data => res.status(200).send('updated karma'))
-    .catch(err => {
-      console.log(err);
-      res.status(500).send('Error updating comment');
-    });
+  try {
+    const data = await db('messages')
+      .where('id', id)
+      .increment('total_karma', 1);
+    res.status(200).json(data);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Error updating comment' });
+  }
 });
+
 /***************************** Socket IO events *****************************/
 
 io.on('connection', socket => {
-  console.log('a user onnected');
+  console.log('a user connected');
 
   socket.on('join general', user => {
     socket.join('general', () => {

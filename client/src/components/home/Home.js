@@ -37,7 +37,7 @@ class Home extends Component {
 
   render() {
     const { authUser, loading } = this.props;
-    console.log(loading);
+
     if (loading) {
       return (
         <div className="spinner">
