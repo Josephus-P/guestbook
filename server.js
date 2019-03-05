@@ -34,27 +34,22 @@ async function verifyToken(req, res, next) {
   const idToken = req.headers.authorization;
 
   try {
-    await admin
-      .auth()
-      .verifyIdToken(idToken)
-      .then(decodedToken => {
-        req.body.uid = decodedToken.uid;
-        console.log('verified');
-        return next();
-      });
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+
+    req.body.uid = decodedToken.uid;
+
+    return next();
   } catch (e) {
     return res.status(401).send('You are not authorized!');
   }
 }
-
-app.use('/login', verifyToken);
 
 app.get('/', (req, res) => {
   res.status(200).send('Hello World');
 });
 
 // Login user
-app.post('/login', async (req, res) => {
+app.post('/login', verifyToken, async (req, res) => {
   const { uid, displayName, photoURL } = req.body;
   const user = {
     uid: uid,
@@ -89,6 +84,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
+// Get all the comments
 app.get('/comments', async (req, res) => {
   try {
     const data = await db('messages as m')
@@ -111,6 +107,7 @@ app.get('/comments', async (req, res) => {
   }
 });
 
+// Insert a new comment into the DB
 app.post('/comments', verifyToken, async (req, res) => {
   const { uid, message, created_date, total_karma } = req.body;
   const comment = {
@@ -129,6 +126,7 @@ app.post('/comments', verifyToken, async (req, res) => {
   }
 });
 
+// Update a comment's karma count
 app.put('/comments/:id/karma', verifyToken, async (req, res) => {
   const { id } = req.params;
 
@@ -142,10 +140,11 @@ app.put('/comments/:id/karma', verifyToken, async (req, res) => {
     res.status(500).json({ message: 'Error updating comment' });
   }
 });
+
 /***************************** Socket IO events *****************************/
 
 io.on('connection', socket => {
-  console.log('a user onnected');
+  console.log('a user connected');
 
   socket.on('join general', user => {
     socket.join('general', () => {
