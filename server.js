@@ -1,12 +1,14 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const port = process.env.PORT || 5000;
 const admin = require('./firebase-admin/admin');
-const db = require('./db/dbConfig');
+const db = require('./db/db-helpers');
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
-require('dotenv').config();
+
+const port = process.env.PORT || 5000;
 
 const onlineUsers = {};
 
@@ -42,11 +44,11 @@ app.post('/login', verifyToken, async (req, res) => {
   };
 
   try {
-    const userResult = await db('users').where('uid', uid);
+    const userResult = await db.getUserByUID(uid);
 
     // If the user doesn't exist then register the user
     if (userResult.length === 0) {
-      const newUser = await db('users').insert(user);
+      const newUser = await db.insertNewUser(user);
       res.status(201).json(newUser);
     }
     // Update the user's details if info has changed
@@ -54,9 +56,7 @@ app.post('/login', verifyToken, async (req, res) => {
       userResult[0].display_name !== displayName ||
       userResult[0].photo_url !== photoURL
     ) {
-      const updatedUser = await db('users')
-        .where('uid', uid)
-        .update(user);
+      const updatedUser = await db.updateUser(uid, user);
 
       res.status(200).json(updatedUser);
     } else {
@@ -71,18 +71,7 @@ app.post('/login', verifyToken, async (req, res) => {
 // Get all the comments
 app.get('/comments', async (req, res) => {
   try {
-    const data = await db('messages as m')
-      .join('users as u', 'm.user_uid', 'u.uid')
-      .select(
-        'm.id',
-        'm.created_date',
-        'm.message',
-        'u.display_name',
-        'u.photo_url',
-        'm.total_karma'
-      )
-      .orderBy('m.id', 'desc')
-      .limit(6);
+    const data = await db.getAllComments();
 
     res.status(200).json(data);
   } catch (error) {
@@ -102,7 +91,7 @@ app.post('/comments', verifyToken, async (req, res) => {
   };
 
   try {
-    const data = await db('messages').insert(comment, ['id']);
+    const data = await db.insertNewComment(comment);
     res.status(201).json(data);
   } catch (error) {
     console.log(error);
@@ -115,9 +104,8 @@ app.put('/comments/:id/karma', verifyToken, async (req, res) => {
   const { id } = req.params;
 
   try {
-    const data = await db('messages')
-      .where('id', id)
-      .increment('total_karma', 1);
+    const data = await db.incrementCommentKarma(id);
+
     res.status(200).json(data);
   } catch (error) {
     console.log(error);
